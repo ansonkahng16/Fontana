@@ -5,8 +5,7 @@ import time
 from matplotlib import pyplot as plt
 
 # define parameters
-N = 1000
-  # number of nodes
+N = 1000  # number of nodes
 gamma_0 = 0.01  # failure rate << 1
 gamma_1 = 0.002  # repair rate << 1
 d = 0.02  # initial fraction of nonfunctional nodes
@@ -26,12 +25,12 @@ def weightedChoice(choices):
 def createGraph(N):
 	t0 = time.time()
 	graph = {0:[]}  # adjacency list
+	degrees = []
 
 	for x in xrange(1,N):
 	    # get degree of each vertex
-	    degrees = []
-	    for g in graph:
-	        degrees.append(len(graph[g]))
+	    # for g in graph:
+	    #     degrees.append(len(graph[g]))
 
 	    graph[x] = []  # initialize as an empty list
 
@@ -42,6 +41,7 @@ def createGraph(N):
 	    if sum(degrees_dist) == 0:
 	    	graph[x] = [0]
 	    	graph[0] = [x]
+	    	degrees.append(1)
 
 	    # get probability distribution
 	    else:
@@ -53,13 +53,18 @@ def createGraph(N):
 	    		graph[x].append(ix)
 	    	if random.random() < d:
 	    		graph[ix].append(x)
+	    		degrees[ix] += 1
 
 	    # if no backwards linkages are made, randomly create one
 	    if len(graph[x]) == 0:
 	    	graph[x] = [weightedChoice(degrees_dist)]
 
+	    degrees.append(len(graph[x]))
+
+
 	t1 = time.time()
 	print t1-t0
+
 	return graph
 
 def ageGraph(graph):
@@ -109,6 +114,9 @@ def ageGraph(graph):
 
 # run the experiment many times and gather vitality data
 vitality_data = []
+
+# graph = createGraph(N)
+# lifespan, vitality = ageGraph(graph)
 
 for n in xrange(0,num_trials):
 	graph = createGraph(N)
