@@ -6,12 +6,12 @@ from matplotlib import pyplot as plt
 import seaborn
 
 # define parameters
-N = 1000  # number of nodes
+N = 5000  # number of nodes
 gamma_0 = 0.01  # failure rate << 1
 gamma_1 = 0.002  # repair rate << 1
 d = 0.02  # initial fraction of nonfunctional nodes
 num_trials = 100  # number of trials to run
-sf = True  # scale-free (T) vs. random (F)
+sf = False  # scale-free (T) vs. random (F)
 
 # dictionary to map sf attr to string
 sf_str = {True: 'sf', False: 'r'}
@@ -101,13 +101,21 @@ def ageGraph(graph):
 					func[i] = 1
 
 		# calculate dependencies, break accordingly
-		for g in graph:
-			ctr = 0
-			lg = len(graph[g])
-			for dep in graph[g]:  # dependencies
-				ctr += func[dep]
-			if ctr / float(lg) < 0.5:
-				func[g] = 0
+		# repeat until no new broken nodes
+		num_broken = 1
+		num_broken_prev = 0
+		while num_broken > num_broken_prev:
+			num_broken_prev = num_broken
+			num_broken = 0
+			for g in graph:
+				ctr = 0
+				lg = len(graph[g])
+				for dep in graph[g]:  # dependencies
+					ctr += func[dep]
+				if ctr / float(lg) < 0.5:
+					num_broken += 1
+					func[g] = 0
+
 
 		vitality.append(sum(func) / float(N))
 
