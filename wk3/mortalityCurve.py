@@ -43,6 +43,12 @@ def plotMortalityCurve(N,num_trials,sf,sf_str,vitality_cutoff):
 	plt_filename = './data/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'_mortality.png'
 	plt.savefig(plt_filename)
 
+def mortalityRate(N,num_trials,sf,sf_str,vitality_cutoff):
+	fpt = mortalityCurve(N,num_trials,sf,sf_str,vitality_cutoff)
+
+	# get rate per unit time...
+	
+
 
 # fpt = mortalityCurve(5000,1000,False,{True: 'sf', False: 'r'},0.05)
 
