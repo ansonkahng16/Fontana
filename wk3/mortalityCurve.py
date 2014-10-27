@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import seaborn
 import csv
 import bisect
+import collections
 
 '''Construct mortality curves based on vitality_data CSV file.'''
 
@@ -47,9 +48,38 @@ def mortalityRate(N,num_trials,sf,sf_str,vitality_cutoff):
 	fpt = mortalityCurve(N,num_trials,sf,sf_str,vitality_cutoff)
 
 	# get rate per unit time...
+	s = len(fpt)  # total number of states
+
+	c = collections.Counter(fpt)
+
 	
+	t_vals = []  # time values
+	m_vals = []  # mortality values
+	# tot = 0
+
+	for k in c:
+		t_vals.append(k)
+		# tot += c[k]
+		m_vals.append(c[k]/float(s))
+		# m_vals.append(tot/float(s))
+		s -= c[k]
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	plt.scatter(t_vals, m_vals)
+	plt.title('Mortality Rate vs. Time')
+	plt.ylabel('Mortality Rate')
+	plt.xlabel('Time')
+	ax.set_yscale('log')
+
+	plt_filename = './data/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'_mortalityrate.png'
+	plt.savefig(plt_filename)
+	# plt.show()
+
 
 
 # fpt = mortalityCurve(5000,1000,False,{True: 'sf', False: 'r'},0.05)
 
-plotMortalityCurve(5000,1000,True,{True: 'sf', False: 'r'},0.05)
+# plotMortalityCurve(5000,1000,True,{True: 'sf', False: 'r'},0.05)
+
+mortalityRate(5000,1000,False,{True: 'sf', False: 'r'},0.05)
