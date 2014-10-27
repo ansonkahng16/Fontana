@@ -17,7 +17,7 @@ gamma_0 = 0.01  # failure rate << 1
 gamma_1 = 0 #0.002  # repair rate << 1
 d = 0.02  # initial fraction of nonfunctional nodes
 num_trials = 100  # number of trials to run
-sf = False  # scale-free (T) vs. random (F)
+sf = True  # scale-free (T) vs. random (F)
 sf_str = {True: 'sf', False: 'r'}  # dictionary to map sf attr to string
 
 

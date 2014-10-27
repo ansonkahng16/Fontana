@@ -11,7 +11,7 @@ import collections
 
 def loadData(N,num_trials,sf,sf_str):
 	vitality_data = []
-	csv_filename = './data/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'.csv'
+	csv_filename = './data_old/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'.csv'
 	with open(csv_filename, 'rb') as f:
 		reader = csv.reader(f)
 		for row in reader:
@@ -71,8 +71,9 @@ def mortalityRate(N,num_trials,sf,sf_str,vitality_cutoff):
 	plt.ylabel('Mortality Rate')
 	plt.xlabel('Time')
 	ax.set_yscale('log')
+	ax.set_xscale('log')
 
-	plt_filename = './data/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'_mortalityrate.png'
+	plt_filename = './data_old/'+sf_str[sf]+'_'+str(N)+'_'+str(num_trials)+'_mortalityrate.png'
 	plt.savefig(plt_filename)
 	# plt.show()
 

@@ -95,7 +95,7 @@ def createGraph(N,sf):
 						total_deg += 1
 			else:
 				# create dependencies
-				cutoff = 1 / float(len(degrees))
+				cutoff = 0.005
 				for ix, d in enumerate(degrees):
 					if random.random() < cutoff:
 						graph[x].append(ix)
@@ -116,21 +116,18 @@ def createGraph(N,sf):
 		degrees.append(len(graph[x]))
 
 	# get rid of repeats in igraph
+	# make sure graph is completely connected
 	for x in igraph:
 		igraph[x] = list(set(igraph[x]))
-
-
-	# make sure that the graph is completely connected
-	# always completely random -- change later?
-	for elt in igraph:
-		if len(igraph[elt]) == 0:
+		if len(igraph[x]) == 0:
 			node = random.randint(0,N-1)
-			graph[node] = [elt]
-			igraph[elt].append(node)
-			
-	lens = []
-	for x in igraph:
-		lens.append(len(igraph[x]))
-	print lens
+			graph[node] = [x]
+			igraph[x].append(node)
+
+
+	# lens = []
+	# for x in igraph:
+	# 	lens.append(len(igraph[x]))
+	# print lens
 
 	return graph
