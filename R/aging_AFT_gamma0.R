@@ -5,13 +5,17 @@ library("rms");
 setwd("/Users/ansonkahng/Fontana/R")
 
 #load the data from disk
-# model_data <- read.csv("../data/wk4/testdata_highcutoff.csv");
 model_data <- read.csv("../data/wk5/gamma0.csv");
+# model_data <- read.csv("../data/wk5/gamma1.csv");
+# model_data <- read.csv("../data/wk5/N.csv");
 
 #Assign each individual a label the AFT algorithm will then interpret as a categorical variable
 # use model_data$name
 #Assign each individual a label the AFT algorithm will then interpret as a categorical variable
+# bj_group = gamma_0 for this run
 model_data$bj_group =  factor(model_data$gamma_0);
+# model_data$bj_group =  factor(model_data$gamma_1);
+# model_data$bj_group =  factor(model_data$N);
 
 #chose an arbitrary group among animals unexposed to choloroquine to use as a reference group
 bj_reference_label = model_data$bj_group[model_data$bj_group==0.01][1]
@@ -61,24 +65,18 @@ scaling$N = as.double(scaling$N)
 par(mfrow=c(2,2),mar=c(4,4,.5,.5));
 
 s = survfit(Surv(model_data$fpt,1-model_data$alive)~model_data$name)
-conc = substring(names(s$strata),17,40)  # get name
+conc = substring(names(s$strata),17,60)  # get name  # doesn't work?
 colors = rep("black",length(conc));
-colors[conc=='r_5000_100_0.01_0_0']="green";
-colors[conc=='sf_5000_100_0.01_0_0']="green";
-colors[conc=='r_5000_100_0.02_0_0']="blue";
-colors[conc=='sf_5000_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.01_0_0']="green";
-colors[conc=='sf_2500_100_0.01_0_0']="green";
-colors[conc=='r_2500_100_0.02_0_0']="blue";
-colors[conc=='sf_2500_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.05_0_0']="red";
-colors[conc=='sf_2500_100_0.05_0_0']="red";
-colors[conc=='r_50000_100_0.01_0_0']="green";
-colors[conc=='sf_50000_100_0.01_0_0']="green";
+colors[conc=='r_2500_100_0.0025_0.0_0.0']="green";
+colors[conc=='sf_2500_100_0.0025_0.0_0.0']="green";
+colors[conc=='r_2500_100_0.00375_0.0_0.0']="red";
+colors[conc=='sf_2500_100_0.00375_0.0_0.0']="red";
+colors[conc=='r_2500_100_0.0075_0.0_0.0']="blue";
+colors[conc=='sf_2500_100_0.0075_0.0_0.0']="blue";
 plot(s,col=colors,mark.time=F,xlab="time (days)",ylab="S[t]")
 
 #plot regression model coefficients
-plot(scaling$group,scaling$coef)  # also fix later...log plot?
+# plot(scaling$group,scaling$coef)  # also fix later...log plot?
 
 # colors = rep("black",length(scaling$concentration));
 # colors[scaling$concentration==16]="green";
@@ -94,38 +92,23 @@ plot(scaling$group,scaling$coef)  # also fix later...log plot?
 s = survfit(Surv(model_data$bj_residual,
                  1-model_data$alive)~model_data$name)
 
-conc = substring(names(s$strata),17,40)  # get name
+conc = substring(names(s$strata),17,60)  # get name  # doesn't work?
 colors = rep("black",length(conc));
-colors[conc=='r_5000_100_0.01_0_0']="green";
-colors[conc=='sf_5000_100_0.01_0_0']="green";
-colors[conc=='r_5000_100_0.02_0_0']="blue";
-colors[conc=='sf_5000_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.01_0_0']="green";
-colors[conc=='sf_2500_100_0.01_0_0']="green";
-colors[conc=='r_2500_100_0.02_0_0']="blue";
-colors[conc=='sf_2500_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.05_0_0']="red";
-colors[conc=='sf_2500_100_0.05_0_0']="red";
-colors[conc=='r_50000_100_0.01_0_0']="green";
-colors[conc=='sf_50000_100_0.01_0_0']="green";
+colors[conc=='r_2500_100_0.0025_0.0_0.0']="green";
+colors[conc=='sf_2500_100_0.0025_0.0_0.0']="green";
+colors[conc=='r_2500_100_0.00375_0.0_0.0']="red";
+colors[conc=='sf_2500_100_0.00375_0.0_0.0']="red";
+colors[conc=='r_2500_100_0.0075_0.0_0.0']="blue";
+colors[conc=='sf_2500_100_0.0075_0.0_0.0']="blue";
 plot(s,col=colors,mark.time=F,xlab="time (days)",ylab="S[t]")
 
 #plot aggregated model residuals
 s = survfit(Surv(model_data$bj_residual,
                  1-model_data$alive)~model_data$bj_group)
 
-conc = substring(names(s$strata),17,40)  # get name
+conc = substring(names(s$strata),21,40)  # get name  # doesn't work?
 colors = rep("black",length(conc));
-colors[conc=='r_5000_100_0.01_0_0']="green";
-colors[conc=='sf_5000_100_0.01_0_0']="green";
-colors[conc=='r_5000_100_0.02_0_0']="blue";
-colors[conc=='sf_5000_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.01_0_0']="green";
-colors[conc=='sf_2500_100_0.01_0_0']="green";
-colors[conc=='r_2500_100_0.02_0_0']="blue";
-colors[conc=='sf_2500_100_0.02_0_0']="blue";
-colors[conc=='r_2500_100_0.05_0_0']="red";
-colors[conc=='sf_2500_100_0.05_0_0']="red";
-colors[conc=='r_50000_100_0.01_0_0']="green";
-colors[conc=='sf_50000_100_0.01_0_0']="green";
+colors[conc=='0.0025']="green";
+colors[conc=='0.00375']="blue";
+colors[conc=='0.0075']="red";
 plot(s,col=colors,mark.time=F,xlab="time (days)",ylab="S[t]")

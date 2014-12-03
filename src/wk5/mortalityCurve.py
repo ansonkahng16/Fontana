@@ -35,7 +35,7 @@ def mortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 	# columns: sf/r, N, num_trials, gamma_0, gmama_1, d, fpt
 	# csv_filename = '/Users/ansonkahng/Fontana/data/wk5/'+sf+'_'+str(N)+'_'+str(num_trials)+'_data.csv'
 	# csv_filename = '/Users/ansonkahng/Fontana/data/wk5/'+str(N)+'_'+str(num_trials)+'_data.csv'
-	csv_filename = '/Users/ansonkahng/Fontana/data/wk5/gamma0.csv'
+	csv_filename = '/Users/ansonkahng/Fontana/data/wk5/gamma1.csv'
 	with open(csv_filename, 'a') as f:
 		writer = csv.writer(f)
 		if os.stat(csv_filename).st_size == 0:  # empty file
@@ -50,6 +50,10 @@ def mortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 def plotMortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 	fpt = mortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d)
 
+	gamma0 = str.replace(str(gamma_0),'.','d')
+	gamma1 = str.replace(str(gamma_1),'.','d')
+	dstr = str.replace(str(d),'.','d')
+
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
 	seaborn.kdeplot(np.array(fpt),cumulative=True)
@@ -59,14 +63,14 @@ def plotMortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 	plt.ylabel('Percent Mortality')
 	plt.title('Mortality vs. Time')
 
-	plt_filename = '/Users/ansonkahng/Fontana/data/wk5/'+sf+'_'+str(N)+'_'+str(num_trials)+'_mortality.png'
+	plt_filename = '/Users/ansonkahng/Fontana/data/wk5/'+sf+'_'+str(N)+'_'+str(num_trials)+'_'+gamma0+'_'+gamma1+'_'+dstr+'_mortality.png'
 	plt.savefig(plt_filename)
 
 	return fpt
 
 def plotMortalityRate(fpt, N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 
-	s = len(fpt)  # total number of states
+	s = len(fpt)  # total number of individuals
 
 	c = collections.Counter(fpt)
 
@@ -77,7 +81,14 @@ def plotMortalityRate(fpt, N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 		t_vals.append(k)
 		m_vals.append(c[k]/float(s))
 		s -= c[k]
-	
+
+	t_vals = sorted(t_vals)
+
+	gamma0 = str.replace(str(gamma_0),'.','d')
+	gamma1 = str.replace(str(gamma_1),'.','d')
+	dstr = str.replace(str(d),'.','d')
+
+
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
 	plt.scatter(t_vals, m_vals)
@@ -87,7 +98,7 @@ def plotMortalityRate(fpt, N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 	ax.set_yscale('log')
 	ax.set_xscale('log')
 
-	plt_filename = '/Users/ansonkahng/Fontana/data/wk5/'+sf+'_'+str(N)+'_'+str(num_trials)+'_mortalityrate.png'
+	plt_filename = '/Users/ansonkahng/Fontana/data/wk5/'+sf+'_'+str(N)+'_'+str(num_trials)+'_'+gamma0+'_'+gamma1+'_'+dstr+'_mortalityrate.png'
 	plt.savefig(plt_filename)
 	# plt.show()
 
