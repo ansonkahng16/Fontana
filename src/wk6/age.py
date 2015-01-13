@@ -56,13 +56,13 @@ def main():
 			vitality_data = []
 			if frailty:  # generate graph each time
 				for n in xrange(0,num_trials):
-					graph = constructGraph.createGraph(N,sf)
-					lifespan, vitality = processGraph.ageGraph(graph,d,gamma_0,gamma_1,N)
+					graph, node = constructGraph.createGraph(N,sf)
+					lifespan, vitality = processGraph.ageGraph(graph,d,gamma_0,gamma_1,N,node)
 					vitality_data.append(vitality)
 					if n % 5 == 0:
 						print n
 			else:  # no frailty - use same (larger) graph and run many simulations
-				graph = util.loadGraph(N,sf)
+				graph = util.loadGraph(N,sf)  # have to fix this for three types of nodes!!
 				print 'graph loaded'
 				for n in xrange(0,num_trials):
 					tic = time.time()

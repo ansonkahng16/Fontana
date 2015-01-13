@@ -11,7 +11,7 @@ Output: lifespan (time before vitality < 0.01),
 '''
 
 
-def ageGraph(graph,d,gamma_0,gamma_1,N):
+def ageGraph(graph,d,gamma_0,gamma_1,N,node):
 	# create functional/nonfunctional vector
 	# set fraction d of them to 0
 	func = [1]*N
@@ -31,7 +31,7 @@ def ageGraph(graph,d,gamma_0,gamma_1,N):
 		for i in xrange(0,N):
 			tmp = random.random()
 			if func[i] == 1:
-				if tmp < gamma_0:
+				if tmp < node[i]:
 					func[i] = 0
 			elif func[i] == 0:
 				if tmp < gamma_1:

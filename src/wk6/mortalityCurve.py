@@ -35,7 +35,7 @@ def mortalityCurve(N,num_trials,sf,vitality_cutoff,gamma_0,gamma_1,d):
 	# columns: sf/r, N, num_trials, gamma_0, gmama_1, d, fpt
 	# csv_filename = '/Users/ansonkahng/Fontana/data/wk6/'+sf+'_'+str(N)+'_'+str(num_trials)+'_data.csv'
 	# csv_filename = '/Users/ansonkahng/Fontana/data/wk6/'+str(N)+'_'+str(num_trials)+'_data.csv'
-	csv_filename = '/Users/ansonkahng/Fontana/data/wk6/gamma1.csv'
+	csv_filename = '/Users/ansonkahng/Fontana/data/wk6/gamma1_nofrail.csv'
 	with open(csv_filename, 'a') as f:
 		writer = csv.writer(f)
 		if os.stat(csv_filename).st_size == 0:  # empty file

@@ -6,7 +6,7 @@ setwd("/Users/ansonkahng/Fontana/R")
 
 #load the data from disk
 # model_data <- read.csv("../data/wk5/gamma0.csv");
-model_data <- read.csv("../data/wk5/gamma1.csv");
+model_data <- read.csv("../data/wk6/gamma1_nofrail.csv");
 # model_data <- read.csv("../data/wk5/N.csv");
 
 #Assign each individual a label the AFT algorithm will then interpret as a categorical variable

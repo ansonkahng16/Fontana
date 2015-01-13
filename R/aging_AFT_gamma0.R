@@ -5,7 +5,7 @@ library("rms");
 setwd("/Users/ansonkahng/Fontana/R")
 
 #load the data from disk
-model_data <- read.csv("../data/wk5/gamma0.csv");
+model_data <- read.csv("../data/wk6/gamma0_nofrail.csv");
 # model_data <- read.csv("../data/wk5/gamma1.csv");
 # model_data <- read.csv("../data/wk5/N.csv");
 

@@ -9,7 +9,11 @@ list of nodes on which each depends as values.
 '''
 
 def createGraph(N,sf):
+	g00 = 0.003
+	g01 = 0.006
+	g02 = 0.009
 	graph = {0:[]}  # adjacency list
+	node = {0:g00}
 	igraph = {0:[]} # inverse dependencies -- things that the node contributes to
 	degrees = []
 
@@ -20,6 +24,14 @@ def createGraph(N,sf):
 	for x in xrange(1,N):
 
 		graph[x] = []  # initialize as an empty list
+		# now for type of node
+		tmp = random.randint(0,2)
+		if tmp == 0:
+			node[x] = g00
+		elif tmp == 1:
+			node[x] = g01
+		else:
+			node[x] = g02
 
 		# make copy of degree list to get deg dists
 		degrees_dist = list(degrees)
@@ -72,9 +84,9 @@ def createGraph(N,sf):
 	for x in igraph:
 		igraph[x] = list(set(igraph[x]))
 		if len(igraph[x]) == 0:
-			node = random.randint(0,N-1)
-			graph[node] = [x]
-			igraph[x].append(node)
+			nodeval = random.randint(0,N-1)
+			graph[nodeval] = [x]
+			igraph[x].append(nodeval)
 
-	return graph
+	return graph, node
 

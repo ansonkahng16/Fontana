@@ -284,4 +284,10 @@ import os
 # print 'gamma_0 done'
 
 
+# # RUN 13: testing initial three color nodes
+# os.system('python age.py 2500 0.00625 0.003 0 100 sf 1 0 0 0.05')
+# os.system('python age.py 2500 0.00625 0.003 0 100 r 1 0 0 0.05')
+
+os.system('python age.py 2500 0.00625 0.003 0 100 sf 1 0 1 0.05')
+os.system('python age.py 2500 0.00625 0.003 0 100 r 1 0 1 0.05')
 
