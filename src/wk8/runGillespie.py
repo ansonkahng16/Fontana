@@ -210,7 +210,7 @@ def graphResults(graphs,plt_filename):
 	# plt.show()
 
 def constructName(graph):  # get filename for graph
-	name = str(graph.n) + '_' + str(graph.sf)
+	name = './data/' +str(graph.n) + '_' + str(graph.sf)
 	return name
 
 def plotMortalityCurve(graphs,plt_filename):
