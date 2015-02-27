@@ -4,89 +4,39 @@ import math
 from matplotlib import pyplot as plt
 import seaborn as sns
 import time
-from math import exp
-from math import log
-import scipy.integrate
-from scipy.integrate import quad
 import sys
-from scipy.stats import rv_continuous
-import scipy.optimize
-from scipy.optimize import newton_krylov
 import copy
-import dill as cPickle
 
-# GOMPERTZ CONSTANTS -- change to change timescale
-a = 0.01
-b = 0.5
-
-# WEIBULL CONSTANTS
-alpha = 3
-beta = 2.5
+# CONSTANTS
+gamma_0 = 0.003
+gamma_1 = 0.000
+gamma_0_new = 0.03
 
 ## Node structure
 class Node:
 	def __init__(self,name,t,dep,idep,depnodes,idepnodes,deg,ideg,g0,g1,func):
-		self.name = name  # name: int
-		self.t = t  # war clock time - list of times
-		self.dep = dep  # dependencies -- names of nodes
-		self.idep = idep  # inverse dependencies -- names of nodes
-		self.deg = deg  # degree
-		self.ideg = ideg  # inverse degree
-		self.g0 = g0  # gamma_0
-		self.g1 = g1  # gamma_1
-		self.func = func  # functional or nonfunctional
-
-## Dist = continuous rv class
-class Dist(rv_continuous):
-	def __init__(self,CDF):
-		super(Dist,self).__init__()
-		self.cdf = CDF
-	def _cdf(self,x):
-		return self.cdf(x)
+		self.name = name
+		self.t = t
+		self.dep = dep
+		self.idep = idep
+		self.depnodes = depnodes
+		self.idepnodes = idepnodes
+		self.deg = deg
+		self.ideg = ideg
+		self.g0 = g0
+		self.g1 = g1
+		self.func = func
 
 ## Graph = list of nodes
 class Graph:
-	def __init__(self,n,t,sf,d,vitality,lifespan,nodes,frail):
-		self.n = n  # num odes
-		self.t = t  # time list
-		self.sf = sf  # sf or r
-		self.d = d  # initial pct of nonfunctional nodes
-		self.vitality = vitality  # list of vitality (pct)
-		self.lifespan = lifespan  # total lifespan
-		self.nodes = nodes  # list of nodes
-		self.frail = frail  # frailty
-		self.dist = Dist(self.CDF)  # CDF
-		self.utime = 0  # for Gillespie
-		self.hazardname = 'Weibull'
-
-	def Hazard(self,t):
-		# return (a/b)*exp(t/b)  # Gompertz hazard
-		return (alpha/beta)*(t/beta)**(alpha-1)  # Weibull hazard
-
-
-	def Activity(self,t):  # over all graph
-		# return self.Hazard(t)  # testing
-		return self.Hazard(t)*self.n*self.vitality[-1]
-
-	def CDF(self,t):
-		return 1 - exp(-quad(self.Activity,0,t)[0])
-
-	def CDF_utime(self,t):
-		return 1 - exp(-quad(self.Activity,0,t)[0]) - self.utime
-
-	def CDF_hetero(self,t):
-		return 2  # not implemented!
-
-
-# Gompertz functions
-def GompertzHazard(t):  # Gompertz Hazard -- based on time
-	return (a/b)*exp(t/b)
-
-def GompertzPDF(t):
-	return GompertzHazard(t)*exp(-a*(exp(t/b)-1))
-
-def inverseGompertz(u,g):  # inverse Gompertz CDF; u is uniformly distributed
-	return b*(log(1-log(u)/(g.n*g.vitality[-1]*a*exp(g.t[-1]/b))))
+	def __init__(self,n,t,sf,d,vitality,lifespan,nodes):
+		self.n = n
+		self.t = t
+		self.sf = sf
+		self.d = d
+		self.vitality = vitality
+		self.lifespan = lifespan
+		self.nodes = nodes
 
 # helper function to set dependencies
 def setDependency(a,b):  # node a depends on node b
@@ -123,10 +73,10 @@ def getTotalRate(g):  # g = graph
 
 	return totalrate,noderates,nodenames,cumulativerates
 
-def createGraph(n,sf,d,f):
+def createGraph(n,sf,d):
 	# initialize graph
-	graph = Graph(n,[0],sf,d,[1],0,[],f)
-	listofnodes = [Node(x,[0],[],[],[],[],0,0,0,0,1) for x in xrange(0,n)]
+	graph = Graph(n,[0],sf,d,[],0,[])
+	listofnodes = [Node(x,[0],[],[],[],[],0,0,gamma_0,gamma_1,1) for x in xrange(0,n)]
 	graph.nodes = listofnodes
 
 	# set zeroth and first nodes to be interdependent
@@ -175,49 +125,39 @@ def createGraph(n,sf,d,f):
 
 	return graph
 
+def modifyGraph(graph,k):
+	node_idx = list(np.random.choice(graph.n,k,replace=False))
+	for idx in node_idx:
+		graph.nodes[idx].g0 = gamma_0_new
+	return graph
+
+
 def ageGraph(graph):
 	# set initial fraction d of nodes to nonfunctional
 	initialnonfunc = random.sample(range(0,graph.n),int(graph.d*graph.n))
 	for idx in initialnonfunc:
 		graph.nodes[idx].func = 0
 
-	# initial update of rates
-	# update hazard rates based on time
-	for n in graph.nodes:
-		n.g0 = graph.Hazard(graph.t[-1])  # (a/b)*exp(n.t[-1]/b)  # math overflow error???
-		# not using this ^
-		n.g1 = 0
+	# initial update of vitality
+	graph.vitality.append(float(sum(c.func for c in graph.nodes)) / graph.n)
 
 	# loop
 	while graph.vitality[-1] > 0.01:
+		# update lifespan
+		graph.lifespan += 1
+
 		# Gillespie
+
+		# get total rate and other meta rate data
+		totalrate,noderates,nodenames,cumulativerates = getTotalRate(graph)
 
 		# generate two uniformly distributed random numbers
 		utime = random.random()
 		ureaction = random.random()
-		graph.utime = utime
 
-		# draw random waiting time from inverse CDF
-		tdiff = graph.dist.ppf(utime)  # most general
+		# draw random waiitng time from exponential distribution; use total rate as param
+		tdiff = -math.log(utime)/totalrate
 		graph.t.append(graph.t[-1]+tdiff)
-
-		# update lifespan
-		graph.lifespan += tdiff
-
-		# update time
-		for g in graph.nodes:
-			if g.func == 0:
-				g.t.append(0)
-			else:
-				g.t.append(g.t[-1]+tdiff)
-
-		# update hazard rates based on time
-		for n in graph.nodes:
-			n.g0 = graph.Hazard(graph.t[-1]) # (a/b)*exp(n.t[-1]/b) # as above, not used
-			n.g1 = 0
-
-		# get total rate and other meta rate data
-		totalrate,noderates,nodenames,cumulativerates = getTotalRate(graph)
 
 		# figure out which reaction
 		for i,x in enumerate(cumulativerates):
@@ -238,18 +178,21 @@ def ageGraph(graph):
 						g.func = 0
 						num_broken += 1
 
-		# print alive nodes
-		# print sum(c.func for c in graph.nodes)
-
 		# update vitality
 		graph.vitality.append(float(sum(c.func for c in graph.nodes)) / graph.n)
-		# print graph.vitality[-1]
+
+		# update time
+		for g in graph.nodes:
+			if g.func == 0:
+				g.t.append(0)
+			else:
+				g.t.append(g.t[-1]+tdiff)
 
 	return graph
 
 def graphResults(graphs,plt_filename):
 	plt.clf()
-	plt_filename = plt_filename + '_Hazard2.png'
+	plt_filename = plt_filename + '.png'
 	for graph in graphs:
 		plt.plot(graph.t,graph.vitality)
 	plt.title('Vitality vs. Time')
@@ -258,10 +201,14 @@ def graphResults(graphs,plt_filename):
 	plt.savefig(plt_filename)
 	# plt.show()
 
+def constructName(graph):  # get filename for graph
+	name = './data/' +str(graph.n) + '_' + str(graph.sf)
+	return name
+
 def plotMortalityCurve(graphs,plt_filename):
 	plt.clf()
 	# process filename
-	plt_filename = plt_filename + '_Hazard_MortalityCurve2.png'
+	plt_filename = plt_filename + '_MortalityCurve.png'
 	# get first passage times
 	fpt = []
 	for graph in graphs:
@@ -271,61 +218,87 @@ def plotMortalityCurve(graphs,plt_filename):
 	sns.kdeplot(np.array(fpt),cumulative=True)
 	plt.savefig(plt_filename)
 
-def constructName(graph):  # get filename for graph
-	name = './data/' + str(graph.n) + '_' + str(graph.sf) + '_' + str(graph.hazardname)
-	if graph.frail == False:
-		name = name + '_nofrail'
-	elif graph.frail == True:
-		name = name + '_frail'
-	return name
+def plotMortalityCurves(graphs_list,plt_filename,ks):
+	plt.clf()
+	fpt = []
+	for graphs in graphs_list:
+		fpt.append([])
+		for graph in graphs:
+			fpt[-1].append(graph.lifespan)
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	for i,x in enumerate(fpt):
+		sns.kdeplot(np.array(x),cumulative=True,label=str(ks[i]))
+	plt.savefig(plt_filename)
 
-def runGillespie(num_trials,n,sf,d,f):
+def runGillespie(num_trials,n,sf,k):
 	graphs = []
 
-	if f == True:  # frail -- heterogeneous (different networks)
-		for i in xrange(0,num_trials):
-			graph1 = createGraph(n,sf,d,f)
-			graph2 = ageGraph(graph1)
-			graphs.append(graph2)
-			if i % 5 == 0:
-				print i
-				print time.ctime()
+	# run with same graph!
+	graph = createGraph(n,sf,0.00)
 
-	elif f == False:  # not frail -- homogeneous (same network)
-		print 'starting to create'
-		aa = time.time()
-		graph = createGraph(n*2,sf,d,f)  # bigger size for this
-		bb = time.time()
-		print bb - aa, 'created'
-		for i in xrange(0,num_trials):
-			ab = time.time()
-			graph1 = copy.deepcopy(graph)  # make copy to pass to ageGraph
-			print time.time() - ab, 'copied'
-			bc = time.time()
-			graph2 = ageGraph(graph1)
-			print time.time() - bc, 'time to age'
-			graphs.append(graph2)
-			if i % 5 == 0:
-				print i
-				print time.ctime()
+	for i in xrange(0,num_trials):
+		# time_a = time.time()
+		graph1 = copy.deepcopy(graph)
+		# graph1 = createGraph(n,sf,0.00)
+		graph2 = modifyGraph(graph1,k)
+		# time_b = time.time()
+		# print time_b - time_a
+		graph3 = ageGraph(graph2)
+		# time_c = time.time()
+		# print time_c - time_b
+		# print graph2.vitality
+		# print graph2.t
+		# print graph2.lifespan
+		# print len(graph2.vitality)
+		graphs.append(graph3)
+		if i % 5 == 0:
+			print i
+			print time.ctime()
 
-	name = constructName(graph2)
+	name = constructName(graph3)
 	name = name + '_' + str(num_trials)
-	plt_filename = './' + name #+ 'Hazard.png'
+	plt_filename = './' + name #+ '.png'
 
-	graphResults(graphs,plt_filename)
-	plotMortalityCurve(graphs,plt_filename)
+	# graphResults(graphs,plt_filename)
+	# plotMortalityCurve(graphs,plt_filename)
 
-def main():
+	return graphs
+
+## PSEUDOMAIN -- clean up later!!
+rgraphs = []
+sfgraphs = []
+nt = 50
+N = 500
+# ks = [0,1,2,int(N/2),N-2,N-1,N]
+ks = [0,N]
+for k in ks:
+	plot_name = str(k)
 	time_a = time.time()
-	runGillespie(100,250,'r',0,True)
+	gr = runGillespie(nt,N,'r',k)
+	rgraphs.append(gr)
+	print 'r done', k
 	time_b = time.time()
 	print time_b - time_a
-	print 'r done'
-	runGillespie(100,250,'sf',0,True)
+	gsf = runGillespie(nt,N,'sf',k)
+	sfgraphs.append(gsf)
 	time_c = time.time()
+	print 'sf done', k
 	print time_c - time_b
-	print 'sf done'
 
-if __name__ == '__main__':
-	main()
+r_filename = './data/' + str(N) + '_' + str(nt) + '_r_MC.png'
+sf_filename = './data/' + str(N) + '_' + str(nt) + '_sf_MC.png'
+
+plotMortalityCurves(rgraphs,r_filename,ks)
+plotMortalityCurves(sfgraphs,sf_filename,ks)
+
+
+# time_a = time.time()
+# runGillespie(5,250,'r',1)
+# time_b = time.time()
+# print time_b - time_a
+# print 'r done'
+# runGillespie(5,250,'sf',1)
+# time_c = time.time()
+# print time_c - time_b
+# print 'sf done'

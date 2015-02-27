@@ -66,6 +66,7 @@ class Graph:
 
 	def Activity(self,t):  # over all graph
 		# return self.Hazard(t)  # testing
+		print t
 		return self.Hazard(t)*self.n*self.vitality[-1]
 
 	def CDF(self,t):
@@ -194,11 +195,14 @@ def ageGraph(graph):
 
 		# generate two uniformly distributed random numbers
 		utime = random.random()
+		# print 'utime', utime
 		ureaction = random.random()
 		graph.utime = utime
 
 		# draw random waiting time from inverse CDF
-		tdiff = graph.dist.ppf(utime)  # most general
+		# tdiff = graph.dist.ppf(utime)  # most general
+		tdiff = graph.CDF_utime(utime)
+		print tdiff
 		graph.t.append(graph.t[-1]+tdiff)
 
 		# update lifespan
