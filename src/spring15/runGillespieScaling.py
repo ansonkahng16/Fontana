@@ -6,11 +6,14 @@ import seaborn as sns
 import time
 import sys
 import copy
+import csv
+import os
 
 # CONSTANTS
-gamma_0 = 0.003
-gamma_1 = 0.000
+gamma_0 = 0.01
+gamma_1 = 0.0
 gamma_0_new = 0.03
+gamma_1_new = 0.0
 
 ## Node structure
 class Node:
@@ -129,6 +132,7 @@ def modifyGraph(graph,k):
 	node_idx = list(np.random.choice(graph.n,k,replace=False))
 	for idx in node_idx:
 		graph.nodes[idx].g0 = gamma_0_new
+		graph.nodes[idx].g1 = gamma_1_new
 	return graph
 
 
@@ -192,7 +196,7 @@ def ageGraph(graph):
 
 def graphResults(graphs,plt_filename):
 	plt.clf()
-	plt_filename = plt_filename + '.png'
+	plt_filename = plt_filename + '.pdf'
 	for graph in graphs:
 		plt.plot(graph.t,graph.vitality)
 	plt.title('Vitality vs. Time')
@@ -208,7 +212,7 @@ def constructName(graph):  # get filename for graph
 def plotMortalityCurve(graphs,plt_filename):
 	plt.clf()
 	# process filename
-	plt_filename = plt_filename + '_MortalityCurve.png'
+	plt_filename = plt_filename + '_MortalityCurve.pdf'
 	# get first passage times
 	fpt = []
 	for graph in graphs:
@@ -220,6 +224,7 @@ def plotMortalityCurve(graphs,plt_filename):
 
 def plotMortalityCurves(graphs_list,plt_filename,ks):
 	plt.clf()
+	plt_filename = plt_filename + '.pdf'
 	fpt = []
 	for graphs in graphs_list:
 		fpt.append([])
@@ -237,11 +242,24 @@ def runGillespie(num_trials,n,sf,k):
 	# run with same graph!
 	graph = createGraph(n,sf,0.00)
 
+	# check that modifications work (part 1)
+	# for x in graph.nodes[0:10]:
+	# 	print x.g0
+
+	graph_mod = modifyGraph(graph,k)
+
+	# check that modifications work! (works)
+	# for y in  graph_mod.nodes[0:10]:
+	# 	print y.g0
+
+	# sys.exit()
+
 	for i in xrange(0,num_trials):
 		# time_a = time.time()
-		graph1 = copy.deepcopy(graph)
+		# graph1 = copy.deepcopy(graph)
 		# graph1 = createGraph(n,sf,0.00)
-		graph2 = modifyGraph(graph1,k)
+		# graph2 = modifyGraph(graph1,k)
+		graph2 = copy.deepcopy(graph_mod)
 		# time_b = time.time()
 		# print time_b - time_a
 		graph3 = ageGraph(graph2)
@@ -265,13 +283,30 @@ def runGillespie(num_trials,n,sf,k):
 
 	return graphs
 
+def writeCSV(graphslist,csv_filename,ks):
+	csv_filename = csv_filename + '.csv'
+
+	with open(csv_filename, 'a') as f:
+		writer = csv.writer(f)
+		if os.stat(csv_filename).st_size == 0:  # empty file
+			writer.writerow(('name','sf','N','num_trials','gamma_0','gamma_0_new','gamma_1','d','fpt','k','alive'))  # write header row
+		for i,graphs in enumerate(graphslist):
+			num_trials = len(graphs)
+			# k = ks[i]
+			k = i
+			for graph in graphs:
+				name = graph.sf + '_' + str(graph.n) + '_' + str(num_trials) + '_' + str(k)
+				writer.writerow((name,graph.sf,graph.n,num_trials,gamma_0,gamma_0_new,gamma_1,graph.d,graph.lifespan,k,0))
+		f.close()
+
+
 ## PSEUDOMAIN -- clean up later!!
 rgraphs = []
 sfgraphs = []
-nt = 50
+nt = 1500
 N = 500
-# ks = [0,1,2,int(N/2),N-2,N-1,N]
-ks = [0,N]
+# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
+ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
 for k in ks:
 	plot_name = str(k)
 	time_a = time.time()
@@ -280,17 +315,20 @@ for k in ks:
 	print 'r done', k
 	time_b = time.time()
 	print time_b - time_a
-	gsf = runGillespie(nt,N,'sf',k)
-	sfgraphs.append(gsf)
-	time_c = time.time()
-	print 'sf done', k
-	print time_c - time_b
+	# gsf = runGillespie(nt,N,'sf',k)
+	# sfgraphs.append(gsf)
+	# time_c = time.time()
+	# print 'sf done', k
+	# print time_c - time_b
 
-r_filename = './data/' + str(N) + '_' + str(nt) + '_r_MC.png'
-sf_filename = './data/' + str(N) + '_' + str(nt) + '_sf_MC.png'
+r_filename = './data/v3_' + str(N) + '_' + str(nt) + '_r'
+sf_filename = './data/v3_' + str(N) + '_' + str(nt) + '_sf'
 
 plotMortalityCurves(rgraphs,r_filename,ks)
 plotMortalityCurves(sfgraphs,sf_filename,ks)
+
+writeCSV(rgraphs,r_filename,ks)
+writeCSV(sfgraphs,sf_filename,ks)
 
 
 # time_a = time.time()

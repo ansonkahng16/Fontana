@@ -60,8 +60,8 @@ class Graph:
 		self.hazardname = 'Weibull'
 
 	def Hazard(self,t):
-		# return (a/b)*exp(t/b)  # Gompertz hazard
-		return (alpha/beta)*(t/beta)**(alpha-1)  # Weibull hazard
+		return (a/b)*exp(t/b)  # Gompertz hazard
+		# return (alpha/beta)*(t/beta)**(alpha-1)  # Weibull hazard
 
 
 	def Activity(self,t):  # over all graph
@@ -253,7 +253,7 @@ def ageGraph(graph):
 
 def graphResults(graphs,plt_filename):
 	plt.clf()
-	plt_filename = plt_filename + '_Hazard2.png'
+	plt_filename = plt_filename + '_Hazard2.pdf'
 	for graph in graphs:
 		plt.plot(graph.t,graph.vitality)
 	plt.title('Vitality vs. Time')
@@ -265,7 +265,7 @@ def graphResults(graphs,plt_filename):
 def plotMortalityCurve(graphs,plt_filename):
 	plt.clf()
 	# process filename
-	plt_filename = plt_filename + '_Hazard_MortalityCurve2.png'
+	plt_filename = plt_filename + '_Hazard_MortalityCurve2.pdf'
 	# get first passage times
 	fpt = []
 	for graph in graphs:
@@ -315,18 +315,18 @@ def runGillespie(num_trials,n,sf,d,f):
 
 	name = constructName(graph2)
 	name = name + '_' + str(num_trials)
-	plt_filename = './' + name #+ 'Hazard.png'
+	plt_filename = './' + name #+ 'Hazard.pdf'
 
 	graphResults(graphs,plt_filename)
 	plotMortalityCurve(graphs,plt_filename)
 
 def main():
 	time_a = time.time()
-	runGillespie(100,250,'r',0,True)
+	runGillespie(100,250,'r',0,False)
 	time_b = time.time()
 	print time_b - time_a
 	print 'r done'
-	runGillespie(100,250,'sf',0,True)
+	runGillespie(100,250,'sf',0,False)
 	time_c = time.time()
 	print time_c - time_b
 	print 'sf done'
