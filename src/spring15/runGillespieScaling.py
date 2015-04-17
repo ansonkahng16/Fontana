@@ -10,9 +10,10 @@ import csv
 import os
 
 # CONSTANTS
-gamma_0 = 0.01
+gamma_0 = float(sys.argv[1])
+# gamma_0 = 0.05
 gamma_1 = 0.0
-gamma_0_new = 0.03
+gamma_0_new = 0.05
 gamma_1_new = 0.0
 
 ## Node structure
@@ -108,6 +109,7 @@ def createGraph(n,sf,d):
 	
 	# random
 	else:
+		# MAKE SURE STATISTICALLY DEFENSIBLE; FIGURE THIS OUT / TALK TO NICK!
 		cutoff = 0.005  # cutoff for random edge generation -- prob of new edge
 		for x in xrange(2,n):  # starts at 2 for base case -- 0 and 1 forced above
 			for y in xrange(0,x):
@@ -293,7 +295,7 @@ def writeCSV(graphslist,csv_filename,ks):
 		for i,graphs in enumerate(graphslist):
 			num_trials = len(graphs)
 			# k = ks[i]
-			k = i
+			k = i  # label by index, not by k-value...need to keep track of k-values better
 			for graph in graphs:
 				name = graph.sf + '_' + str(graph.n) + '_' + str(num_trials) + '_' + str(k)
 				writer.writerow((name,graph.sf,graph.n,num_trials,gamma_0,gamma_0_new,gamma_1,graph.d,graph.lifespan,k,0))
@@ -306,23 +308,23 @@ sfgraphs = []
 nt = 1500
 N = 500
 # ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
-ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
+# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
+ks = [0,0,0,0,0,0]
 for k in ks:
-	plot_name = str(k)
 	time_a = time.time()
 	gr = runGillespie(nt,N,'r',k)
 	rgraphs.append(gr)
 	print 'r done', k
 	time_b = time.time()
 	print time_b - time_a
-	# gsf = runGillespie(nt,N,'sf',k)
-	# sfgraphs.append(gsf)
-	# time_c = time.time()
-	# print 'sf done', k
-	# print time_c - time_b
+	gsf = runGillespie(nt,N,'sf',k)
+	sfgraphs.append(gsf)
+	time_c = time.time()
+	print 'sf done', k
+	print time_c - time_b
 
-r_filename = './data/v3_' + str(N) + '_' + str(nt) + '_r'
-sf_filename = './data/v3_' + str(N) + '_' + str(nt) + '_sf'
+r_filename = './data/v4_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_r'
+sf_filename = './data/v4_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_sf'
 
 plotMortalityCurves(rgraphs,r_filename,ks)
 plotMortalityCurves(sfgraphs,sf_filename,ks)

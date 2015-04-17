@@ -9,7 +9,8 @@ setwd("/Users/ansonkahng/Fontana/src/spring15")
 # model_data <- read.csv("./data/v2_500_1000_r.csv");  # 0, N/2
 # model_data <- read.csv("./data/v2_750_1500_r.csv");  # 0, 0, 1, N/2, N-1, N
 # model_data <- read.csv("./data/v2_500_1500_r.csv");  # 0, 0, 0, N/2, N/2, N/2, N, N, N
-model_data <- read.csv("./data/v3_500_1500_r.csv");  # 0, 0, 0, N/2, N/2, N/2, N, N, N
+# model_data <- read.csv("./data/v3_500_1500_r.csv");  # 0, 0, 0, N/2, N/2, N/2, N, N, N
+model_data <- read.csv("./data/v4_500_1500_80_r.csv");
 # model_data <- read.csv("./data/v2_500_1550_r.csv");  # 0, 0, N/2, N/2, N, N
 # model_data <- read.csv("./data/1000_200_r.csv");  # 0, 1, 2, N/2, N-2, N-1, N
 # model_data <- read.csv("./data/1000_500_r.csv");  # 0, 1, 2, N/2, N-2, N-1, N
@@ -143,38 +144,38 @@ dist3 <- rep(summary(s[3])$time, times = summary(s[3])$n.event)
 dist4 <- rep(summary(s[4])$time, times = summary(s[4])$n.event)
 dist5 <- rep(summary(s[5])$time, times = summary(s[5])$n.event)
 dist6 <- rep(summary(s[6])$time, times = summary(s[6])$n.event)
-dist7 <- rep(summary(s[7])$time, times = summary(s[7])$n.event)
-dist8 <- rep(summary(s[8])$time, times = summary(s[8])$n.event)
-dist9 <- rep(summary(s[9])$time, times = summary(s[9])$n.event)
+# dist7 <- rep(summary(s[7])$time, times = summary(s[7])$n.event)
+# dist8 <- rep(summary(s[8])$time, times = summary(s[8])$n.event)
+# dist9 <- rep(summary(s[9])$time, times = summary(s[9])$n.event)
 
 # Kolmogorov-Smirnov test -- two-sample
 # 0
-ks.test(dist1,dist2)
-ks.test(dist1,dist3)
-ks.test(dist2,dist3)
+# ks.test(dist1,dist2)
+# ks.test(dist1,dist3)
+# ks.test(dist2,dist3)
 
 # N/2
-ks.test(dist4,dist5)
-ks.test(dist4,dist6)
-ks.test(dist5,dist6)
+# ks.test(dist4,dist5)
+# ks.test(dist4,dist6)
+# ks.test(dist5,dist6)
 # ks.test(dist3,dist4)
 
 # N
-ks.test(dist7,dist8)
-ks.test(dist7,dist9)
-ks.test(dist8,dist9)
+# ks.test(dist7,dist8)
+# ks.test(dist7,dist9)
+# ks.test(dist8,dist9)
 # ks.test(dist5,dist6)
 
 # 0 vs. N/2
-ks.test(dist1,dist4)
-ks.test(dist1,dist5)
-ks.test(dist1,dist6)
-ks.test(dist2,dist4)
-ks.test(dist2,dist5)
-ks.test(dist2,dist6)
-ks.test(dist3,dist4)
-ks.test(dist3,dist5)
-ks.test(dist3,dist6)
+# ks.test(dist1,dist4)
+# ks.test(dist1,dist5)
+# ks.test(dist1,dist6)
+# ks.test(dist2,dist4)
+# ks.test(dist2,dist5)
+# ks.test(dist2,dist6)
+# ks.test(dist3,dist4)
+# ks.test(dist3,dist5)
+# ks.test(dist3,dist6)
 
 # ks.test(dist1,dist3)
 # ks.test(dist2,dist3)
@@ -182,15 +183,15 @@ ks.test(dist3,dist6)
 # ks.test(dist2,dist4)
 
 # 0 vs. N
-ks.test(dist1,dist7)
-ks.test(dist1,dist8)
-ks.test(dist1,dist9)
-ks.test(dist2,dist7)
-ks.test(dist2,dist8)
-ks.test(dist2,dist9)
-ks.test(dist3,dist7)
-ks.test(dist3,dist8)
-ks.test(dist3,dist9)
+# ks.test(dist1,dist7)
+# ks.test(dist1,dist8)
+# ks.test(dist1,dist9)
+# ks.test(dist2,dist7)
+# ks.test(dist2,dist8)
+# ks.test(dist2,dist9)
+# ks.test(dist3,dist7)
+# ks.test(dist3,dist8)
+# ks.test(dist3,dist9)
 
 # ks.test(dist1,dist5)
 # ks.test(dist1,dist6)
@@ -198,18 +199,61 @@ ks.test(dist3,dist9)
 # ks.test(dist2,dist6)
 
 # N/2 vs. N
-ks.test(dist4,dist7)
-ks.test(dist4,dist8)
-ks.test(dist4,dist9)
-ks.test(dist5,dist7)
-ks.test(dist5,dist8)
-ks.test(dist5,dist9)
-ks.test(dist6,dist7)
-ks.test(dist6,dist8)
-ks.test(dist6,dist9)
+# ks.test(dist4,dist7)
+# ks.test(dist4,dist8)
+# ks.test(dist4,dist9)
+# ks.test(dist5,dist7)
+# ks.test(dist5,dist8)
+# ks.test(dist5,dist9)
+# ks.test(dist6,dist7)
+# ks.test(dist6,dist8)
+# ks.test(dist6,dist9)
 
 # ks.test(dist3,dist5)
 # ks.test(dist3,dist6)
 # ks.test(dist4,dist5)
 # ks.test(dist4,dist6)
 
+dists <- list(dist1,dist2,dist3,dist4,dist5,dist6);
+alldists <- c(dist1,dist2,dist3,dist4,dist5,dist6);
+tsts = c();
+dsts = c();
+maxdsts = c();
+
+for (i in 1:(length(dists)-1)) {
+  for (j in (i+1):length(dists)) {
+    tst <- ks.test(dists[[i]],dists[[j]])
+    tmp <- tst$p.value
+    disttmp <- tst$statistic
+    tsts <- c(tsts,tmp)
+    dsts <- c(dsts,disttmp)
+  }
+}
+
+# tsts
+# mean(tsts)
+# max(dsts)
+
+sampledist = max(dsts)
+sampledist
+
+maxdists = c()
+for (m in 1:1000) {
+  perm <- sample(alldists,length(alldists),replace=FALSE)
+  splits = split(perm, ceiling(seq_along(perm)/(length(dist1))))
+  tsts2 = c()
+  dsts2 = c()
+  for (i in 1:(length(splits)-1)) {
+    for (j in (i+1):length(splits)) {
+      tst2 <- ks.test(splits[[i]],splits[[j]])
+      tmp2 <- tst2$p.value
+      disttmp2 <- tst2$statistic
+      tsts2 <- c(tsts2,tmp2)
+      dsts2 <- c(dsts2,disttmp2)
+    }
+  }
+  maxdists <- c(maxdists,max(dsts2))
+}
+
+mdsort = sort(maxdists)
+which.max(mdsort[mdsort<=sampledist])
