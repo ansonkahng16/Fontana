@@ -8,6 +8,7 @@ import sys
 import copy
 import csv
 import os
+import networkx as nx
 
 # CONSTANTS
 # gamma_0 = float(sys.argv[1])
@@ -54,6 +55,8 @@ def getFunc(graph,a):  # a = node
 	depfuncs = []
 	for dep in a.dep:
 		depfuncs.append(graph.nodes[dep].func)
+
+	# print depfuncs
 
 	pctfunc = sum(depfuncs) / float(len(depfuncs))
 
@@ -140,6 +143,9 @@ def modifyGraph(graph,k):
 
 def ageGraph(graph):
 	# set initial fraction d of nodes to nonfunctional
+	graph_adjdict_list = []
+	graph_nodedeps = copy.deepcopy(getadjdict(graph))  # update this to break nodes to graph
+
 	initialnonfunc = random.sample(range(0,graph.n),int(graph.d*graph.n))
 	for idx in initialnonfunc:
 		graph.nodes[idx].func = 0
@@ -149,6 +155,8 @@ def ageGraph(graph):
 
 	# loop
 	while graph.vitality[-1] > 0.01:
+
+		graph_nodedeps = copy.deepcopy(graph_nodedeps)
 		# update lifespan
 		graph.lifespan += 1
 
@@ -169,6 +177,9 @@ def ageGraph(graph):
 		for i,x in enumerate(cumulativerates):
 			if x > ureaction:  # ith reaction
 				graph.nodes[i].func = 1 - graph.nodes[i].func
+				for k,v in graph_nodedeps.items():
+					if graph.nodes[i].name in v:
+						v.remove(graph.nodes[i].name)
 				break  # make sure only that one reaction occurs
 
 		# calculate dependencies, break accordingly
@@ -182,6 +193,9 @@ def ageGraph(graph):
 				if g.func == 1:
 					if depfunc < 0.5:
 						g.func = 0
+						for k,v in graph_nodedeps.items():
+							if g.name in v:
+								v.remove(g.name)
 						num_broken += 1
 
 		# update vitality
@@ -194,7 +208,10 @@ def ageGraph(graph):
 			else:
 				g.t.append(g.t[-1]+tdiff)
 
-	return graph
+		# update adjacency dictionary based on broken nodes
+		graph_adjdict_list.append(graph_nodedeps)
+
+	return graph, graph_adjdict_list
 
 def graphResults(graphs,plt_filename):
 	plt.clf()
@@ -303,44 +320,89 @@ def writeCSV(graphslist,csv_filename,ks):
 				writer.writerow((name,graph.sf,graph.n,num_trials,gamma_0,gamma_0_new,gamma_1,graph.d,graph.lifespan,k,0))
 		f.close()
 
+def getadjdict(graph):
+	adjdict = {}
+	for i,g in enumerate(graph.nodes):
+		adjdict[i] = g.dep
+	return adjdict
 
-## PSEUDOMAIN -- clean up later!!
-rgraphs = []
-sfgraphs = []
-nt = 1500
-N = 500
-# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
-# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
-ks = [0,0,int(N/2),int(N/2),N,N]
-for k in ks:
-	time_a = time.time()
-	gr = runGillespie(nt,N,'r',k)
-	rgraphs.append(gr)
-	print 'r done', k
-	time_b = time.time()
-	print time_b - time_a
-	gsf = runGillespie(nt,N,'sf',k)
-	sfgraphs.append(gsf)
-	time_c = time.time()
-	print 'sf done', k
-	print time_c - time_b
+def plotadjdict(adjdict):
+	G=nx.DiGraph(adjdict)
+	nx.draw_circular(G,node_size=50,with_labels=True,font_size=8)
+	plt.show()
 
-r_filename = './data/nick_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_r'
-sf_filename = './data/nick_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_sf'
+def visualizedict(graph):
+	adjdict = getadjdict(graph)
+	plotadjdict(adjdict)
 
-plotMortalityCurves(rgraphs,r_filename,ks)
-plotMortalityCurves(sfgraphs,sf_filename,ks)
+def pseudomain():
+	rgraphs = []
+	sfgraphs = []
+	nt = 1500
+	N = 500
+	# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
+	# ks = [0,0,0,int(N/2),int(N/2),int(N/2),N,N,N]
+	ks = [0,0,int(N/2),int(N/2),N,N]
+	for k in ks:
+		time_a = time.time()
+		gr = runGillespie(nt,N,'r',k)
+		rgraphs.append(gr)
+		print 'r done', k
+		time_b = time.time()
+		print time_b - time_a
+		gsf = runGillespie(nt,N,'sf',k)
+		sfgraphs.append(gsf)
+		time_c = time.time()
+		print 'sf done', k
+		print time_c - time_b
 
-writeCSV(rgraphs,r_filename,ks)
-writeCSV(sfgraphs,sf_filename,ks)
+	r_filename = './data/nick_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_r'
+	sf_filename = './data/nick_' + str(N) + '_' + str(nt) + '_' + str(int(1000*gamma_0)) + '_sf'
+
+	plotMortalityCurves(rgraphs,r_filename,ks)
+	plotMortalityCurves(sfgraphs,sf_filename,ks)
+
+	writeCSV(rgraphs,r_filename,ks)
+	writeCSV(sfgraphs,sf_filename,ks)
+
+def main():
+	# pseudomain()
+
+	# graph visualization
+	n = 200
+	sf = 'sf'
+	graph = createGraph(n,sf,0.0)
+	graph2, graph2_adjdict_list = ageGraph(graph)
+	adjdict = {}
+	adjdictcount = {}
+	for i,g in enumerate(graph.nodes):
+		adjdict[i] = g.dep
+		adjdictcount[i] = len(g.dep)
+	len_adjdict_list = len(graph2_adjdict_list)
+
+	pctalivelist = []
+	for al in graph2_adjdict_list:
+		pctalivelist.append({})
+		for i,k in enumerate(al):
+			pctalive = len(al[k])/float(adjdictcount[i])
+			pctalivelist[-1][k] = pctalive
+
+	print pctalivelist
+	sys.exit()
+
+	print graph2_adjdict_list[0]
+	print graph2_adjdict_list[len_adjdict_list-2]
+
+	plotadjdict(graph2_adjdict_list[len_adjdict_list-2])
+
+	# G = nx.DiGraph(adjdict) # bold = arrow (pointing toward bold)
+	# G = nx.DiGraph(graph2_adjdict_list[len_adjdict_list-1])
+	# nx.draw_circular(G,node_size=50,with_labels=True,font_size=8)
+	# plt.show()
 
 
-# time_a = time.time()
-# runGillespie(5,250,'r',1)
-# time_b = time.time()
-# print time_b - time_a
-# print 'r done'
-# runGillespie(5,250,'sf',1)
-# time_c = time.time()
-# print time_c - time_b
-# print 'sf done'
+
+
+if __name__ == '__main__':
+	main()
+
