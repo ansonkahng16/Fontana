@@ -173,9 +173,9 @@ def ageGraph(graph):
 
 		# calculate dependencies, break accordingly
 		num_broken = 1
-		num_broken_prev = 0
-		while num_broken > num_broken_prev:
-			num_broken_prev = num_broken
+		# num_broken_prev = 0
+		while num_broken > 0:
+			# num_broken_prev = num_broken
 			num_broken = 0
 			for g in graph.nodes:
 				depfunc = getFunc(graph,g)
