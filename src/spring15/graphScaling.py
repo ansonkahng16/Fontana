@@ -244,6 +244,15 @@ def getadjdict(graph):
 		adjdict[i] = g.dep
 	return adjdict
 
+
+def getadjdictplus(graph):
+	adjdict = {}
+	adjdictcount = []
+	for i,g in enumerate(graph.nodes):
+		adjdict[i] = g.dep
+		adjdictcount.append(len(g.dep))
+	return adjdict, adjdictcount
+
 def plotadjdict(adjdict,livenodes,figname,ctd):
 	figname = './graphs/' + figname + '.pdf'
 	nodecolors = []
@@ -278,20 +287,7 @@ def visualizedict(graph):
 	adjdict = getadjdict(graph)
 	plotadjdict(adjdict)
 
-def visualize(n,sf):
-	# graph visualization
-
-	graph = createGraph(n,sf,0.0)
-	graph2, graph2_adjdict_list, graph2_functionalnodeslist = ageGraph(graph)
-
-	adjdict = {}
-	adjdictcount = {}
-	for i,g in enumerate(graph.nodes):
-		adjdict[i] = g.dep
-		adjdictcount[i] = len(g.dep)
-
-	len_adjdict_list = len(graph2_adjdict_list)
-
+def processGraphTimeData(graph2_adjdict_list, graph2_functionalnodeslist, adjdictcount):
 	pctalivelist = []
 	closetodeathll = []
 	for j,al in enumerate(graph2_adjdict_list):
@@ -323,6 +319,21 @@ def visualize(n,sf):
 		else:
 			fracclosetodeath.append('div by 0')
 
+	return pctalivelist, closetodeathll, numclosetodeath, fracclosetodeath
+
+def visualize(n,sf):
+	# graph visualization
+
+	graph = createGraph(n,sf,0.0)
+	graph2, graph2_adjdict_list, graph2_functionalnodeslist = ageGraph(graph)
+
+	len_adjdict_list = len(graph2_adjdict_list)
+
+	adjdict, adjdictcount = getadjdictplus(graph)
+
+	pctalivelist, closetodeathll, numclosetodeath, fracclosetodeath = processGraphTimeData(graph2_adjdict_list, graph2_functionalnodeslist, adjdictcount)
+
+
 	# write all data to file
 	with open('./graphs/datalog.txt','ab') as f:
 		print>>f, time.ctime()		
@@ -342,12 +353,6 @@ def visualize(n,sf):
 		# plot graph with only valid edges
 		figname = str(n) + '_' + sf + '_' + str(idx) + '_' + str(len_adjdict_list) + '_valid'
 		plotadjdict(graph2_adjdict_list[idx],graph2_functionalnodeslist[idx],figname,ctd)
-
-		# print graph2_adjdict_list[idx]
-		# print graph2_functionalnodeslist[idx]
-		# print adjdict
-
-		# sys.exit()
 
 		# plot graph with all edges from nodes that are still alive
 		figname = str(n) + '_' + sf + '_' + str(idx) + '_' + str(len_adjdict_list) + '_alive'
