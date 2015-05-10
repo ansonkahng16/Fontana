@@ -318,44 +318,6 @@ def getFuncCTD(adjdict,adjdict_count):
 			ctr += 1
 	return ctr
 
-def analyzeCTD(currentadjdict,adjdict_count,livenodes,ctd,idx):
-	currentadjdict = currentadjdict[idx]
-	livenodes = livenodes[idx]
-	ctd = ctd[idx]
-
-	ctd_dict = {}
-
-	for x in ctd:  # for each ctd node
-		if x[1]:  # if ctd
-			# make copy of adjdict
-			tmp = copy.deepcopy(currentadjdict)
-			orig_dict_count = getFuncCTD(tmp,adjdict_count)
-			broken_node = x[0] # node name
-			for k,v in tmp.items():
-				if broken_node in v:
-					v.remove(broken_node)
-
-			ctr = 1
-			# recursively break dependencies
-			while ctr > 0:
-				ctr = 0
-				# check if nodes are broken
-				for k,v in tmp.items():
-					pctalive = len(tmp[k])/float(adjdict_count[k])
-					if pctalive < 0.5:
-						for k1,v1 in tmp.items():
-							if k in v1:
-								ctr += 1
-								v1.remove(k)
-
-			# ctd node broken: number of nodes still alive
-			numfunc = getFuncCTD(tmp,adjdict_count)
-
-			ctd_dict[x[0]] = (orig_dict_count,numfunc)
-
-
-	return ctd_dict
-
 def analyzeLiveNodes(currentadjdict,adjdict_count,livenodes,idx):
 	currentadjdict = currentadjdict[idx]
 	livenodes = livenodes[idx]
@@ -489,22 +451,6 @@ def visualizeGraph(n,sf):
 			print 'no a'
 		print 'num to 0', b.count(0), '/', len(b)
 		# print 'num to death'  # get number that drops everything below threshold
-
-		print '==========================================='
-
-		tmpx = analyzeCTD(adjdict_list,adjdict_count,functional_nodes_list,ctd_lists,idx)
-		a = [a for (a,_) in tmpx.values()]
-		b = [b for (_,b) in tmpx.values()]
-		try:
-			avg = sum(b)/float(len(b))
-		except:
-			avg = 'divide by 0'
-		try:
-			print a[0], sorted(b)
-			print 'avg', avg, a[0]
-		except:
-			print 'no a'
-		print 'num to 0', b.count(0), '/', len(b)
 
 		# plot graph with only valid edges
 		figname = str(n) + '_' + sf + '_' + str(idx) + '_' + str(len_adjdict_list) + '_valid'
