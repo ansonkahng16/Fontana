@@ -271,8 +271,6 @@ def plotAdjdict(adjdict,livenodes,figname,ctd):
 
 	nx.draw_circular(G,node_size=50,with_labels=True,font_size=8,node_color=nodecolors)
 
-	# plt.show()
-
 	plt.savefig(figname)
 
 
@@ -314,7 +312,7 @@ def plotCTD(adjdict,livenodes,figname,ctd):
 def getFuncCTD(adjdict,adjdict_count):
 	ctr = 0
 	for k,v in adjdict.items():
-		if len(v) / float(adjdict_count[k]) > 0.5:
+		if len(v) / float(adjdict_count[k]) >= 0.5:
 			ctr += 1
 	return ctr
 
@@ -335,7 +333,7 @@ def analyzeLiveNodes(currentadjdict,adjdict_count,livenodes,idx):
 					v.remove(broken_node)
 
 			ctr = 1
-			# recursively break dependencies
+			# repeatedly break dependencies
 			while ctr > 0:
 				ctr = 0
 				# check if nodes are broken
@@ -404,10 +402,17 @@ def visualizeGraph(n,sf):
 	# get all other summary statistics 
 	pct_alive_list, ctd_lists, num_CTD, frac_CTD = processGraphTimeData(adjdict_list, functional_nodes_list, adjdict_count)
 
+	num_to_zero_list = []
+	for time_idx in xrange(0,len_adjdict_list):
+		possible_death_stats = analyzeLiveNodes(adjdict_list,adjdict_count,functional_nodes_list,time_idx)
+		a = [a for (a,_) in possible_death_stats.values()]
+		b = [b for (_,b) in possible_death_stats.values()]
+		num_to_zero_list.append(str(b.count(0)) + '/' + str(len(b)))
+
 	# # ctd statistics
-	# tmpx = analyzeCTD(adjdict_list,adjdict_count,functional_nodes_list,ctd_lists,len_adjdict_list-3)
-	# a = [a for (a,_) in tmpx.values()]
-	# b = [b for (_,b) in tmpx.values()]
+	# possible_death_stats = analyzeCTD(adjdict_list,adjdict_count,functional_nodes_list,ctd_lists,len_adjdict_list-3)
+	# a = [a for (a,_) in possible_death_stats.values()]
+	# b = [b for (_,b) in possible_death_stats.values()]
 	# avg = sum(b)/float(len(b))
 	# print a[0], sorted(b)
 	# print 'avg', avg, a[0]
@@ -416,8 +421,8 @@ def visualizeGraph(n,sf):
 
 	# # IMPLEMENT OTHER METRIC OF VITALITY
 	# # ALSO REWRITE CODE. THIS IS NASTY AF
-	# # print tmpx
-	# sorted_x = sorted(tmpx.items(), key=operator.itemgetter(1))
+	# # print possible_death_stats
+	# sorted_x = sorted(possible_death_stats.items(), key=operator.itemgetter(1))
 	# print sorted_x
 	# sys.exit()
 
@@ -428,6 +433,7 @@ def visualizeGraph(n,sf):
 		print>>f,sf
 		print>>f, len_adjdict_list
 		print>>f, zip(num_CTD,frac_CTD)
+		print>>f, num_to_zero_list
 		print>>f, '======================================'
 	f.close()
 
@@ -437,20 +443,20 @@ def visualizeGraph(n,sf):
 
 		ctd = ctd_lists[idx]
 
-		tmpx = analyzeLiveNodes(adjdict_list,adjdict_count,functional_nodes_list,idx)
-		a = [a for (a,_) in tmpx.values()]
-		b = [b for (_,b) in tmpx.values()]
-		try:
-			avg = sum(b)/float(len(b))
-		except:
-			avg = 'divide by 0'
-		try:
-			print a[0], sorted(b)
-			print 'avg', avg, a[0]
-		except:
-			print 'no a'
-		print 'num to 0', b.count(0), '/', len(b)
-		# print 'num to death'  # get number that drops everything below threshold
+		# possible_death_stats = analyzeLiveNodes(adjdict_list,adjdict_count,functional_nodes_list,idx)
+		# a = [a for (a,_) in possible_death_stats.values()]
+		# b = [b for (_,b) in possible_death_stats.values()]
+		# try:
+		# 	avg = sum(b)/float(len(b))
+		# except:
+		# 	avg = 'divide by 0'
+		# try:
+		# 	print a[0], sorted(b)
+		# 	print 'avg', avg, a[0]
+		# except:
+		# 	print 'no a'
+		# print 'num to 0', b.count(0), '/', len(b)
+		# print '=============================='
 
 		# plot graph with only valid edges
 		figname = str(n) + '_' + sf + '_' + str(idx) + '_' + str(len_adjdict_list) + '_valid'
