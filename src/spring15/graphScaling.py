@@ -403,11 +403,18 @@ def visualizeGraph(n,sf):
 	pct_alive_list, ctd_lists, num_CTD, frac_CTD = processGraphTimeData(adjdict_list, functional_nodes_list, adjdict_count)
 
 	num_to_zero_list = []
+	num_to_zero_prob = 1
 	for time_idx in xrange(0,len_adjdict_list):
 		possible_death_stats = analyzeLiveNodes(adjdict_list,adjdict_count,functional_nodes_list,time_idx)
 		a = [a for (a,_) in possible_death_stats.values()]
 		b = [b for (_,b) in possible_death_stats.values()]
 		num_to_zero_list.append(str(b.count(0)) + '/' + str(len(b)))
+		try: 
+			x = float(b.count(0))
+			y = float(len(b))
+			num_to_zero_prob *= ((y-x)/y)
+		except:
+			num_to_zero_prob *= 1
 
 	# # ctd statistics
 	# possible_death_stats = analyzeCTD(adjdict_list,adjdict_count,functional_nodes_list,ctd_lists,len_adjdict_list-3)
@@ -434,6 +441,7 @@ def visualizeGraph(n,sf):
 		print>>f, len_adjdict_list
 		print>>f, zip(num_CTD,frac_CTD)
 		print>>f, num_to_zero_list
+		print>>f, num_to_zero_prob
 		print>>f, '======================================'
 	f.close()
 
